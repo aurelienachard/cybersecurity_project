@@ -31,11 +31,12 @@ db.connect((error) => {
     }
 })
 
-app.get('/zap/status', (req, response) => {
+// verifier qu'on peut se connecter a la page zap
+app.get('/zap/status', (request, response) => {
     axios.get(`${ZAP_API_URL}/JSON/core/view/version/?apikey=${ZAP_API_KEY}`)
-        .then(zapResponse => {
-            if (zapResponse.data && zapResponse.data.version) {
-                response.json({ status: 'connected', version: zapResponse.data.version})
+        .then(reponse => {
+            if (reponse.data && reponse.data.version) {
+                response.json({ status: 'connected', version: reponse.data.version})
             } else {
                 response.status(500).json({status: 'error', error: 'Réponse ZAP invalide'})
             }
@@ -45,6 +46,99 @@ app.get('/zap/status', (req, response) => {
             response.status(500).json({status: 'disconnected', error: 'Impossible de se connecter à ZAP'
             })
         })
+})
+
+// demarrer le spider scan
+app.post('/zap/spider', (request, response) => {
+    const {targetURL} = request.body
+
+    if (!targetURL) {
+        return response.status(400).json({ status: 'error', error: 'URL cible requis'})
+    }
+
+    axios.get(`${ZAP_API_URL}/JSON/spider/action/scan/?apikey=${ZAP_API_KEY}%url=${encodeURIComponent(targetURL)}`)
+    .then(reponse => {
+        if (reponse.data && reponse.data.scan) {
+            response.json({status: 'success', scanID: reponse.data.scan})
+        } else {
+            response.status(500).json({status: 'error', error: 'Response ZAP Invalide'})
+        }
+    })
+    .catch(error => {
+        console.log('Erreur lors du chargement du lancement du spider scan:', error)
+        response.status(500).json({status: 'error', error: 'Impossible de lancer le spider scan'})
+    })
+})
+
+// voir le pourcentage d'un spider scan
+app.get('/zap/spider/status/:scanID', (request, response) => {
+    const {scanID} = request.params
+
+    axios.get(`${ZAP_API_URL}/JSON/spider/view/status/?apikey=${ZAP_API_KEY}&scanId=${scanID}`)
+    .then(reponse => {
+        if (reponse.data && reponse.data.status !== undefined) {
+            response.json({status: 'success', progress: reponse.data.status, completed: reponse.data.status === "100"})
+        } else {
+            response.status(500).json({status: 'error', error: 'Réponse ZAP Invalide'})
+        }
+    })
+    .catch(error =>{
+        console.log('Erreur lors de la vérification du statut du scan:', error)
+        response.status(500).json({status: 'error', error: 'Impossible de vérifier le statut du scan'})
+    })
+})
+
+// stop le spider scan
+app.get('/zap/spider/stop/:scanID', (request, response) => {
+    const {scanID} = request.params
+    axios.get(`${ZAP_API_URL}/JSON/spider/action/stop/?apikey=${ZAP_API_KEY}&scanId=${scanID}`)
+    .then(response => {
+        if (response.data && response.data.Result) {
+            response.json({status: 'succes', message: 'Spider scan arrêté'})
+        } else { 
+            response.status(500).json({status: 'error', error: 'Réponse ZAP Invalide'})
+        }
+    })
+    .catch(error =>{
+        console.log('Erreur lors de l\'arrêt du spider scan:', error)
+        response.status(500).json({status: 'error', error: 'Impossible d\'arrêter le spider scan'})
+    })
+})
+
+// pause le spider scan
+
+app.get('/zap/spider/pause/:scanID', (request, response) => {
+    const {scanID} = request.params
+    axios.get(`${ZAP_API_URL}/JSON/spider/action/pause/?apikey=${ZAP_API_KEY}&scanId=${scanID}`)
+    .then(response => {
+        if (response.data && response.data.Result) {
+            response.json({status: 'succes', message: 'Spider scan mis en pause'})
+        } else { 
+            response.status(500).json({status: 'error', error: 'Réponse ZAP invalide'})
+        }
+    })
+    .catch(error =>{
+        console.log('Erreur lors de la mise en pause du spider scan:', error)
+        response.status(500).json({status: 'error', error: 'Impossible de mettre en pause le spider scan'})
+    })
+})
+
+// reprendre le spider scan
+
+app.get('/zap/spider/resume/:scanID', (request, response) => {
+    const {scanID} = request.params
+    axios.get(`${ZAP_API_URL}/JSON/spider/action/resume/?apikey=${ZAP_API_KEY}&scanId=${scanID}`)
+    .then(response => {
+        if (response.data && response.data.Result) {
+            response.json({status: 'succes', message: 'Spider scan repris'})
+        } else { 
+            response.status(500).json({status: 'error', error: 'Response ZAP Invalide'})
+        }
+    })
+    .catch(error =>{
+        console.log('Erreur lors de la reprise du spider scan:', error)
+        response.status(500).json({status: 'error', error: 'Impossible de reprendre le spider scan'})
+    })
 })
 
 // route de connexion
