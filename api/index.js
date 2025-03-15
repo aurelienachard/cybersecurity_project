@@ -6,11 +6,15 @@ const cors = require('cors')
 const mysql = require('mysql2')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
+const axios = require('axios')
 
 app.use(express.json())
 app.use(cors())
 
 const secretKey = process.env.SECRET_KEY
+
+const ZAP_API_URL = process.env.ZAP_URL
+const ZAP_API_KEY = process.env.ZAP_API
 
 const db = mysql.createConnection({
     host: process.env.DB_HOST,
@@ -27,8 +31,23 @@ db.connect((error) => {
     }
 })
 
-// route de connexion
+app.get('/zap/status', (req, response) => {
+    axios.get(`${ZAP_API_URL}/JSON/core/view/version/?apikey=${ZAP_API_KEY}`)
+        .then(zapResponse => {
+            if (zapResponse.data && zapResponse.data.version) {
+                response.json({ status: 'connected', version: zapResponse.data.version})
+            } else {
+                response.status(500).json({status: 'error', error: 'Réponse ZAP invalide'})
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors de la connexion à ZAP:', error)
+            response.status(500).json({status: 'disconnected', error: 'Impossible de se connecter à ZAP'
+            })
+        })
+})
 
+// route de connexion
 app.post('/authentication', (request, response) => {
     const {username, password} = request.body
 
@@ -61,7 +80,6 @@ app.post('/authentication', (request, response) => {
 })
 
 // creation d'un utilisateur
-
 app.post('/register', (request, response) => {
     const {username, password} = request.body
     const saltRound = 12
