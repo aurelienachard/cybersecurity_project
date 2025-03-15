@@ -57,9 +57,9 @@ app.post('/zap/spider', (request, response) => {
     }
 
     axios.get(`${ZAP_API_URL}/JSON/spider/action/scan/?apikey=${ZAP_API_KEY}&url=${encodeURIComponent(targetURL)}`)
-    .then(reponse => {
-        if (reponse.data && reponse.data.scan) {
-            response.json({status: 'success', scanID: reponse.data.scan})
+    .then(zapReponse => {
+        if (zapReponse.data && zapReponse.data.scan) {
+            response.json({status: 'success', scanID: zapReponse.data.scan})
         } else {
             response.status(500).json({status: 'error', error: 'Response ZAP Invalide'})
         }
@@ -75,9 +75,9 @@ app.get('/zap/spider/status/:scanID', (request, response) => {
     const {scanID} = request.params
 
     axios.get(`${ZAP_API_URL}/JSON/spider/view/status/?apikey=${ZAP_API_KEY}&scanId=${scanID}`)
-    .then(reponse => {
-        if (reponse.data && reponse.data.status !== undefined) {
-            response.json({status: 'success', progress: reponse.data.status, completed: reponse.data.status === "100"})
+    .then(zapReponse => {
+        if (zapReponse.data && zapReponse.data.status !== undefined) {
+            response.json({status: 'success', progress: zapReponse.data.status, completed: zapReponse.data.status === "100"})
         } else {
             response.status(500).json({status: 'error', error: 'Réponse ZAP Invalide'})
         }
@@ -92,11 +92,11 @@ app.get('/zap/spider/status/:scanID', (request, response) => {
 app.get('/zap/spider/stop/:scanID', (request, response) => {
     const {scanID} = request.params
     axios.get(`${ZAP_API_URL}/JSON/spider/action/stop/?apikey=${ZAP_API_KEY}&scanId=${scanID}`)
-    .then(response => {
-        if (response.data && response.data.Result) {
-            response.json({status: 'succes', message: 'Spider scan arrêté'})
+    .then(zapResponse => {
+        if (zapResponse.data && zapResponse.data.Result) {
+            response.json({status: 'succes', message: 'Spider scan arrêté'})  // Utilisez response, pas zapResponse
         } else { 
-            response.status(500).json({status: 'error', error: 'Réponse ZAP Invalide'})
+            response.status(500).json({status: 'error', error: 'Réponse ZAP Invalide'})  // Utilisez response, pas zapResponse
         }
     })
     .catch(error =>{
@@ -109,11 +109,11 @@ app.get('/zap/spider/stop/:scanID', (request, response) => {
 app.get('/zap/spider/pause/:scanID', (request, response) => {
     const {scanID} = request.params
     axios.get(`${ZAP_API_URL}/JSON/spider/action/pause/?apikey=${ZAP_API_KEY}&scanId=${scanID}`)
-    .then(response => {
-        if (response.data && response.data.Result) {
-            response.json({status: 'succes', message: 'Spider scan mis en pause'})
+    .then(zapResponse => {
+        if (zapResponse.data && zapResponse.data.Result) {
+            response.json({status: 'succes', message: 'Spider scan mis en pause'})  // Utilisez response, pas zapResponse
         } else { 
-            response.status(500).json({status: 'error', error: 'Réponse ZAP invalide'})
+            response.status(500).json({status: 'error', error: 'Réponse ZAP invalide'})  // Utilisez response, pas zapResponse
         }
     })
     .catch(error =>{
@@ -123,15 +123,14 @@ app.get('/zap/spider/pause/:scanID', (request, response) => {
 })
 
 // reprendre le spider scan
-
 app.get('/zap/spider/resume/:scanID', (request, response) => {
     const {scanID} = request.params
     axios.get(`${ZAP_API_URL}/JSON/spider/action/resume/?apikey=${ZAP_API_KEY}&scanId=${scanID}`)
-    .then(response => {
-        if (response.data && response.data.Result) {
-            response.json({status: 'succes', message: 'Spider scan repris'})
+    .then(zapResponse => {
+        if (zapResponse.data && zapResponse.data.Result) {
+            response.json({status: 'succes', message: 'Spider scan repris'})  // Utilisez response, pas zapResponse
         } else { 
-            response.status(500).json({status: 'error', error: 'Response ZAP Invalide'})
+            response.status(500).json({status: 'error', error: 'Response ZAP Invalide'})  // Utilisez response, pas zapResponse
         }
     })
     .catch(error =>{
