@@ -56,7 +56,7 @@ app.post('/zap/spider', (request, response) => {
         return response.status(400).json({ status: 'error', error: 'URL cible requis'})
     }
 
-    axios.get(`${ZAP_API_URL}/JSON/spider/action/scan/?apikey=${ZAP_API_KEY}%url=${encodeURIComponent(targetURL)}`)
+    axios.get(`${ZAP_API_URL}/JSON/spider/action/scan/?apikey=${ZAP_API_KEY}&url=${encodeURIComponent(targetURL)}`)
     .then(reponse => {
         if (reponse.data && reponse.data.scan) {
             response.json({status: 'success', scanID: reponse.data.scan})
@@ -106,7 +106,6 @@ app.get('/zap/spider/stop/:scanID', (request, response) => {
 })
 
 // pause le spider scan
-
 app.get('/zap/spider/pause/:scanID', (request, response) => {
     const {scanID} = request.params
     axios.get(`${ZAP_API_URL}/JSON/spider/action/pause/?apikey=${ZAP_API_KEY}&scanId=${scanID}`)
