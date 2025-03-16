@@ -2,7 +2,7 @@ import { useState } from "react"
 import Header from "../components/header"
 import axios from 'axios'
 
-const Tool = () => {
+const Exploring = () => {
     const [targetURL, setTargetURL] = useState('')
     const [scanID, setScanID] = useState(null)
     const [scanStatus, setScanStatus] = useState(null)
@@ -168,4 +168,4 @@ const Tool = () => {
         </div>
     )}
 
-export default Tool
+export default Exploring

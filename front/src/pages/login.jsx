@@ -30,7 +30,7 @@ const Login = () => {
         })
         .then((response) => {
             localStorage.setItem('token', response.data.token)
-            navigate('/tool')
+            navigate('/home')
         })
         .catch((error) => {
             console.log(error)
