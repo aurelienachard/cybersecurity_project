@@ -108,8 +108,6 @@ const Tool = () => {
         <div className="bg-gray-900 min-h-screen w-full">
             <Header />
             <div className="p-[24px]">
-                <h2 className="text-white font-bold text-[24px] text-center">Analysons votre site web</h2>
-
                 <form onSubmit={startScan} className="pt-[24px] w-[640px] mx-auto">
                     <label className="text-white">Rentrez votre URL</label>
                     <input 
@@ -119,27 +117,55 @@ const Tool = () => {
                         className="mt-[10px] block w-full rounded-md bg-white/5 pt-[12px] pl-[16px] pb-[12px] pr-[16px] text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6" 
                         required
                     />
-
                     <button
                         type="submit"
                         className="mt-[20px] flex w-full justify-center rounded-md bg-indigo-500 pt-[12px] pl-[16px] pb-[12px] pr-[16px] text-[16px] font-semibold text-white shadow-xs hover:bg-indigo-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
-                    Envoyer
+                        Envoyer
                     </button>
                 </form>
             </div>
 
             {scanID && (
-                <div className="bg-white p-[24px] mt-[24px]">
-                    <p>Scan démarré avec succès! ID du scan {scanID}</p>
-                    <p>Statut: {scanStatus === 'stopped' ? 'Arrêté' : 'En cours'}</p>
-
-                    <button onClick={stopScan} className="bg-red-500 text-white pt-[12px] pl-[16px] pb-[12px] pr-[16px]">Arreter le scan</button>
-                    <button onClick={pauseScan} className="bg-orange-500 text-white pt-[12px] pl-[16px] pb-[12px] pr-[16px]">Mettre en pause le scan</button>
-                    <button onClick={relancerScan} className="bg-green-500 text-white pt-[12px] pl-[16px] pb-[12px] pr-[16px]">Mettre en pause le scan</button>
+                <div>
+                    {scanStatus === 'stopped' ? (
+                        <div className="bg-emerald-800 p-[24px] mt-[24px] w-[640px] mx-auto rounded-lg shadow-md outline-1 -outline-offset-1 outline-white/10 px-4 py-5 sm:p-6">
+                            <p className="text-white text-[18px] font-bold">Le scan a été arrêté avec succès.</p>
+                        </div>
+                    ) : (
+                        <div className="bg-gray-800 p-[24px] mt-[24px] w-[640px] mx-auto rounded-lg shadow-md outline-1 -outline-offset-1 outline-white/10 px-4 py-5 sm:p-6">
+                            <p className="text-white font-bold text-[18px] mb-[10px]">Scan démarré avec succès! {scanID}</p>
+                            <p className="text-white">Statut :
+                                {
+                                    scanStatus === 'stopped' ? ' Arrêté' : 
+                                    scanStatus === 'pause' ? ' Pause' :
+                                    scanStatus === 'resume' ? ' En cours' : ' En cours'
+                                }
+                            </p>
+                            
+                            <div className="flex flex-col gap-[16px] mt-[16px]">
+                                <button
+                                    onClick={stopScan}
+                                    className="rounded-sm bg-red-500 text-white pt-[12px] pl-[16px] pb-[12px] pr-[16px] font-semibold shadow-xs hover:bg-red-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500">
+                                    Arrêter le scan
+                                </button>
+                                
+                                <button
+                                    onClick={pauseScmx-autoan}
+                                    className="rounded-sm bg-orange-500 text-white pt-[12px] pl-[16px] pb-[12px] pr-[16px] font-semibold shadow-xs hover:bg-orange-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500">
+                                    Mettre en pause le scan
+                                </button>
+                                
+                                <button
+                                    onClick={relancerScan}
+                                    className="rounded-sm bg-emerald-500 text-white pt-[12px] pl-[16px] pb-[12px] pr-[16px] font-semibold shadow-xs hover:bg-emerald-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500">
+                                    Redémarrer le scan
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
-    )
-}
+    )}
 
 export default Tool
