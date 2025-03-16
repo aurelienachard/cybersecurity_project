@@ -150,7 +150,7 @@ const Exploring = () => {
                                 </button>
                                 
                                 <button
-                                    onClick={pauseScmx-autoan}
+                                    onClick={pauseScan}
                                     className="rounded-sm bg-orange-500 text-white pt-[12px] pl-[16px] pb-[12px] pr-[16px] font-semibold shadow-xs hover:bg-orange-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500">
                                     Mettre en pause le scan
                                 </button>
