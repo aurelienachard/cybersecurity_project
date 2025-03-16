@@ -200,12 +200,11 @@ app.get('/zap/spider/resume/:scanID', (request, response) => {
 // lancer un scan active
 app.post('/zap/activescan', (request, response) => {
     const {targetURL} = request.body
-    const {contextID} = request.params
 
     if (!targetURL) {
         return response.status(400).json({ status: 'error', error: 'URL cible requis'})
     }
-    axios.get(`${ZAP_API_URL}/JSON/ascan/action/scan/?apikey=${ZAP_API_KEY}&url=${encodeURIComponent(targetURL)}&recurse=true&inScopeOnly=&scanPolicyName=&method=&postData=&contextId=${contextID}`)
+    axios.get(`${ZAP_API_URL}/JSON/ascan/action/scan/?apikey=${ZAP_API_KEY}&url=${encodeURIComponent(targetURL)}&recurse=true&inScopeOnly=&scanPolicyName=&method=&postData=&contextId=`)
     .then(zapReponse => {
         if (zapReponse.data && zapReponse.data.scan) {
             response.json({status: 'success', scanID: zapReponse.data.scan})
@@ -274,6 +273,25 @@ app.get('/zap/activescan/stop/:scanID', (request, response) => {
     .catch(error => {
         console.log('Erreur lors de la vérification du statut de l\'Active Scan:', error)
         response.status(500).json({status: 'error', error: 'Impossible de vérifier le statut de l\'Active Scan'})
+    })
+})
+
+// generer un rapport HTML
+app.get('/zap/htmlreport', (request, response) => {
+    axios.get(`${ZAP_API_URL}/OTHER/core/other/htmlreport/?apikey=${ZAP_API_KEY}`, {
+        responseType: 'text'
+    })
+    .then(zapReponse => {
+        if (zapReponse.data) {
+            response.setHeader('Content-Type', 'text/html');
+            response.send(zapReponse.data);
+        } else { 
+            response.status(500).json({status: 'error', error: 'Réponse ZAP Invalide'})
+        }
+    })
+    .catch(error => {
+        console.log('Erreur lors de la génération du rapport HTML:', error)
+        response.status(500).json({status: 'error', error: 'Impossible de générer le rapport HTML'})
     })
 })
 
