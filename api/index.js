@@ -202,7 +202,7 @@ app.post('/zap/activescan', (request, response) => {
     const {targetURL} = request.body
     const {contextID} = request.params
 
-    if (!target) {
+    if (!targetURL) {
         return response.status(400).json({ status: 'error', error: 'URL cible requis'})
     }
     axios.get(`${ZAP_API_URL}/JSON/ascan/action/scan/?apikey=${ZAP_API_KEY}&url=${encodeURIComponent(targetURL)}&recurse=true&inScopeOnly=&scanPolicyName=&method=&postData=&contextId=${contextID}`)
@@ -220,7 +220,7 @@ app.post('/zap/activescan', (request, response) => {
 })
 
 // voir le status d'un active scan
-app.get('zap/activescan/status/:scanID', (request, response) => {
+app.get('/zap/activescan/status/:scanID', (request, response) => {
     const {scanID} = request.params
 
     axios.get(`${ZAP_API_URL}/JSON/ascan/view/status/?apikey=${ZAP_API_KEY}&scanId=${scanID}`)
@@ -265,7 +265,7 @@ app.get('/zap/activescan/stop/:scanID', (request, response) => {
 
     axios.get(`${ZAP_API_URL}/JSON/ascan/action/stop/?apikey=${ZAP_API_KEY}&scanId=${scanID}`)
     .then(zapReponse => {
-        if (zapResponse.data && zapResponse.data.Result) {
+        if (zapReponse.data && zapReponse.data.Result) {
             response.json({status: 'succes', message: 'Active Scan arrêté'})
         } else {
             response.status(500).json({status: 'error', error: 'Réponse ZAP Invalide'})
