@@ -31,6 +31,64 @@ db.connect((error) => {
     }
 })
 
+// route de connexion
+app.post('/authentication', (request, response) => {
+    const {username, password} = request.body
+
+    db.query('select * from users where username = ?', username, (error, result) => {
+        if (error) {
+            console.log(error)
+            return response.json(error)
+        }
+
+        if (result.length === 0) {
+            return response.status(401).json({message: 'username introuvable'})
+        }
+
+        const username = result[0]
+
+        bcrypt.compare(password, username.password, (error, match) => {
+            if (error) {
+                console.log(error)
+                return response.json(error)
+            }
+
+            if (!match) {
+                return response.status(401).json({message: 'mot de passe incorrect'})
+            }
+
+            const token = jwt.sign({id: username.user_id}, secretKey, {expiresIn: '1h'})
+            return response.json({ token })
+        })
+    })
+})
+
+// creation d'un utilisateur
+app.post('/register', (request, response) => {
+    const {username, password} = request.body
+    const saltRound = 12
+
+    bcrypt.genSalt(saltRound, (error, salt) => {
+        if (error) {
+            console.log(error)
+        }
+
+        bcrypt.hash(password, salt, (error, hash) => {
+            if (error) {
+                console.log(error)
+            }
+
+            db.query('insert into users (username, password) values (?, ?)', [username, hash], (error) => {
+                if (error) {
+                    console.log(error)
+                } else {
+                    response.json('values inserted')
+                }
+            })
+        })
+    })
+})
+
 // verifier qu'on peut se connecter a la page zap
 app.get('/zap/status', (request, response) => {
     axios.get(`${ZAP_API_URL}/JSON/core/view/version/?apikey=${ZAP_API_KEY}`)
@@ -139,61 +197,83 @@ app.get('/zap/spider/resume/:scanID', (request, response) => {
     })
 })
 
-// route de connexion
-app.post('/authentication', (request, response) => {
-    const {username, password} = request.body
+// lancer un scan active
+app.post('/zap/activescan', (request, response) => {
+    const {targetURL} = request.body
+    const {contextID} = request.params
 
-    db.query('select * from users where username = ?', username, (error, result) => {
-        if (error) {
-            console.log(error)
-            return response.json(error)
+    if (!target) {
+        return response.status(400).json({ status: 'error', error: 'URL cible requis'})
+    }
+    axios.get(`${ZAP_API_URL}/JSON/ascan/action/scan/?apikey=${ZAP_API_KEY}&url=${encodeURIComponent(targetURL)}&recurse=true&inScopeOnly=&scanPolicyName=&method=&postData=&contextId=${contextID}`)
+    .then(zapReponse => {
+        if (zapReponse.data && zapReponse.data.scan) {
+            response.json({status: 'success', scanID: zapReponse.data.scan})
+        } else {
+            response.status(500).json({status: 'error', error: 'Reponse ZAP Invalide'})
         }
-
-        if (result.length === 0) {
-            return response.status(401).json({message: 'username introuvable'})
-        }
-
-        const username = result[0]
-
-        bcrypt.compare(password, username.password, (error, match) => {
-            if (error) {
-                console.log(error)
-                return response.json(error)
-            }
-
-            if (!match) {
-                return response.status(401).json({message: 'mot de passe incorrect'})
-            }
-
-            const token = jwt.sign({id: username.user_id}, secretKey, {expiresIn: '1h'})
-            return response.json({ token })
-        })
+    })
+    .catch(error => {
+        console.log('Erreur lors du lancement de l\'Active Scan:', error)
+        response.status(500).json({status: 'error', error: 'Impossible de lancer Active Scan'})
     })
 })
 
-// creation d'un utilisateur
-app.post('/register', (request, response) => {
-    const {username, password} = request.body
-    const saltRound = 12
+// voir le status d'un active scan
+app.get('zap/activescan/status/:scanID', (request, response) => {
+    const {scanID} = request.params
 
-    bcrypt.genSalt(saltRound, (error, salt) => {
-        if (error) {
-            console.log(error)
+    axios.get(`${ZAP_API_URL}/JSON/ascan/view/status/?apikey=${ZAP_API_KEY}&scanId=${scanID}`)
+    .then(zapReponse => {
+        if (zapReponse.data && zapReponse.data.status !== undefined) {
+            response.json({status: 'success', progress: zapReponse.data.status, completed: zapReponse.data.status === "100"})
+        } else {
+            response.status(500).json({status: 'error', error: 'Réponse ZAP Invalide'})
         }
+    })
+    .catch(error => {
+        console.log('Erreur lors de la vérification du statut de l\'Active Scan:', error)
+        response.status(500).json({status: 'error', error: 'Impossible de vérifier le statut de l\'Active Scan'})
+    })
+})
 
-        bcrypt.hash(password, salt, (error, hash) => {
-            if (error) {
-                console.log(error)
-            }
+// voir les alertes du scan active
+app.get('/zap/activescan/status', (request, response) => {
+    const {targetURL} = request.body
 
-            db.query('insert into users (username, password) values (?, ?)', [username, hash], (error) => {
-                if (error) {
-                    console.log(error)
-                } else {
-                    response.json('values inserted')
-                }
-            })
-        })
+    if (!targetURL) {
+        return response.status(400).json({ status: 'error', error: 'URL cible requis'})
+    }
+
+    axios.get(`${ZAP_API_URL}/JSON/core/view/alerts/?apikey=${ZAP_API_KEY}&baseurl=${encodeURIComponent(targetURL)}&start=0&count=10`)
+    .then(zapReponse => {
+        if (zapReponse.data && zapReponse.data.alerts !== undefined) {
+            response.json({status: 'success', alerts: zapReponse.data.alerts})
+        } else {
+            response.status(500).json({status: 'error', error: 'Réponse ZAP Invalide'})
+        }
+    })
+    .catch(error =>{
+        console.log('Erreur lors de la récupération des alertes:', error)
+        response.status(500).json({status: 'error', error: 'Impossible de récupérer les alertes'})
+    })
+})
+
+// arreter un active scan
+app.get('/zap/activescan/stop/:scanID', (request, response) => {
+    const {scanID} = request.params
+
+    axios.get(`${ZAP_API_URL}/JSON/ascan/action/stop/?apikey=${ZAP_API_KEY}&scanId=${scanID}`)
+    .then(zapReponse => {
+        if (zapResponse.data && zapResponse.data.Result) {
+            response.json({status: 'succes', message: 'Active Scan arrêté'})
+        } else {
+            response.status(500).json({status: 'error', error: 'Réponse ZAP Invalide'})
+        }
+    })
+    .catch(error => {
+        console.log('Erreur lors de la vérification du statut de l\'Active Scan:', error)
+        response.status(500).json({status: 'error', error: 'Impossible de vérifier le statut de l\'Active Scan'})
     })
 })
 
