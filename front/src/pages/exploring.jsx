@@ -133,7 +133,7 @@ const Exploring = () => {
                         </div>
                     ) : (
                         <div className="bg-gray-800 p-[24px] mt-[24px] w-[640px] mx-auto rounded-lg shadow-md outline-1 -outline-offset-1 outline-white/10 px-4 py-5 sm:p-6">
-                            <p className="text-white font-bold text-[18px] mb-[10px]">Scan démarré avec succès! {scanID}</p>
+                            <p className="text-white font-bold text-[18px] mb-[10px]">Scan démarré avec succès!</p>
                             <p className="text-white">Statut :
                                 {
                                     scanStatus === 'stopped' ? ' Arrêté' : 
