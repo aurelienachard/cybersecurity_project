@@ -60,10 +60,10 @@ const Attacking = () => {
             </div>
 
             {scanID && (
-                <div>
-                    <div>
-                        <p className="text-white">scan actif demarre</p>
-
+                <div className="bg-gray-800 p-[24px] mt-[24px] w-[640px] mx-auto rounded-lg shadow-md outline-1 -outline-offset-1 outline-white/10 px-4 py-5 sm:p-6">
+                    <p className="text-white font-bold text-[18px] mb-[10px]">Scan actif démarré avec succès!</p>
+                    
+                    <div className="flex flex-col gap-[16px] mt-[16px]">
                         <button
                             onClick={downloadHTMLReport}
                             className="rounded-sm bg-green-500 text-white pt-[12px] pl-[16px] pb-[12px] pr-[16px] font-semibold shadow-xs hover:bg-green-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500">
